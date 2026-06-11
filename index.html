@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Supabase Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button { padding: 8px; margin: 5px; }
+    .box { border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+
+<h2>Admin Dashboard</h2>
+
+<input id="title" placeholder="Title">
+<input id="type" placeholder="Type">
+<input id="config" placeholder="Config">
+<button onclick="add()">Add</button>
+
+<hr>
+
+<div id="list"></div>
+
+<script>
+const SUPABASE_URL = "https://oamkdgwqyasuwpzvveyi.supabase.co";
+const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hbWtkZ3dxeWFzdXdwenZ2ZXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODI2NTAsImV4cCI6MjA5Njc1ODY1MH0.JBzcdLTVwSbN3VJOI-QSUDIFTaU_BNzSHOi3GCPk1q8";
+
+async function load() {
+  const res = await fetch(
+    SUPABASE_URL + "/rest/v1/configs?select=*",
+    {
+      headers: {
+        apikey: API_KEY,
+        Authorization: "Bearer " + API_KEY
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  document.getElementById("list").innerHTML =
+    data.map(i => `
+      <div class="box">
+        <b>${i.title}</b><br>
+        Type: ${i.type}<br>
+        <code>${i.config}</code><br>
+        Active: ${i.active}
+      </div>
+    `).join("");
+}
+
+async function add() {
+  await fetch(SUPABASE_URL + "/rest/v1/configs", {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: "Bearer " + API_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      title: document.getElementById("title").value,
+      type: document.getElementById("type").value,
+      config: document.getElementById("config").value,
+      active: true
+    })
+  });
+
+  load();
+}
+
+load();
+</script>
+
+</body>
+</html>
