@@ -1,50 +1,168 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Supabase Dashboard</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    input, button { padding: 8px; margin: 5px; }
-    .box { border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Glass Admin Dashboard</title>
+
+<style>
+/* ===== GLOBAL ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  color: white;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+  width: 100%;
+  max-width: 900px;
+}
+
+/* ===== GLASS CARD ===== */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+  animation: fadeIn 0.6s ease;
+}
+
+/* ===== INPUTS ===== */
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 6px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  transition: 0.3s;
+}
+
+input:focus {
+  background: rgba(255,255,255,0.2);
+}
+
+/* ===== BUTTONS ===== */
+button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  background: #3b82f6;
+  color: white;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background: #2563eb;
+}
+
+/* ===== CARD LIST ===== */
+.card {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  padding: 15px;
+  border-radius: 14px;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* ===== DELETE BUTTON ===== */
+.del {
+  background: #ef4444;
+  margin-top: 10px;
+}
+
+/* ===== TITLE ===== */
+h2 {
+  margin-bottom: 10px;
+}
+
+/* ===== ANIMATION ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 600px) {
+  .glass {
+    padding: 15px;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+</style>
 </head>
+
 <body>
 
-<h2>Admin Dashboard</h2>
+<div class="container">
 
-<input id="title" placeholder="Title">
-<input id="type" placeholder="Type">
-<input id="config" placeholder="Config">
-<button onclick="add()">Add</button>
+  <!-- INPUT PANEL -->
+  <div class="glass">
+    <h2>✨ Admin Dashboard</h2>
 
-<hr>
+    <input id="title" placeholder="Title">
+    <input id="type" placeholder="Type">
+    <input id="config" placeholder="Config">
 
-<div id="list"></div>
+    <button onclick="add()">➕ Add Item</button>
+  </div>
+
+  <!-- LIST -->
+  <div class="glass">
+    <h2>📦 Items</h2>
+    <div id="list"></div>
+  </div>
+
+</div>
 
 <script>
 const SUPABASE_URL = "https://oamkdgwqyasuwpzvveyi.supabase.co";
 const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hbWtkZ3dxeWFzdXdwenZ2ZXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODI2NTAsImV4cCI6MjA5Njc1ODY1MH0.JBzcdLTVwSbN3VJOI-QSUDIFTaU_BNzSHOi3GCPk1q8";
 
 async function load() {
-  const res = await fetch(
-    SUPABASE_URL + "/rest/v1/configs?select=*",
-    {
-      headers: {
-        apikey: API_KEY,
-        Authorization: "Bearer " + API_KEY
-      }
+  const res = await fetch(SUPABASE_URL + "/rest/v1/configs?select=*", {
+    headers: {
+      apikey: API_KEY,
+      Authorization: "Bearer " + API_KEY
     }
-  );
+  });
 
   const data = await res.json();
 
   document.getElementById("list").innerHTML =
     data.map(i => `
-      <div class="box">
-        <b>${i.title}</b><br>
-        Type: ${i.type}<br>
+      <div class="card">
+        <b>📌 ${i.title}</b><br>
+        🏷 ${i.type}<br>
         <code>${i.config}</code><br>
-        Active: ${i.active}
+        <button class="del" onclick="del(${i.id})">Delete</button>
       </div>
     `).join("");
 }
@@ -58,11 +176,23 @@ async function add() {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      title: document.getElementById("title").value,
-      type: document.getElementById("type").value,
-      config: document.getElementById("config").value,
+      title: title.value,
+      type: type.value,
+      config: config.value,
       active: true
     })
+  });
+
+  load();
+}
+
+async function del(id) {
+  await fetch(SUPABASE_URL + "/rest/v1/configs?id=eq." + id, {
+    method: "DELETE",
+    headers: {
+      apikey: API_KEY,
+      Authorization: "Bearer " + API_KEY
+    }
   });
 
   load();
